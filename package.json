@@ -1,0 +1,20 @@
+{
+  "name": "automaia",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Ferramentas online gratuitas com painel administrativo local e seguranca client-side.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@imgly/background-removal": "^1.7.0",
+    "browser-image-compression": "^2.0.2",
+    "motion": "^12.40.0",
+    "qrcode": "^1.5.4",
+    "vite": "^7.2.4"
+  },
+  "devDependencies": {}
+}

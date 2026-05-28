@@ -1,0 +1,12 @@
+export const TOOLS = [
+  { id: 'background-remover', code: 'BG', title: 'Removedor de Fundo', category: 'Imagem', description: 'Remove fundo de imagens direto no navegador, sem enviar arquivo para servidor.', tags: ['imagem', 'png', 'privado'], modulePath: './background-remover.js' },
+  { id: 'image-converter', code: 'IC', title: 'Conversor de Imagem', category: 'Imagem', description: 'Converta PNG, JPG e WebP com controle de qualidade.', tags: ['imagem', 'webp', 'jpg'], modulePath: './image-converter.js' },
+  { id: 'image-compressor', code: 'CP', title: 'Compressor de Imagem', category: 'Imagem', description: 'Reduza peso de imagens mantendo boa qualidade visual.', tags: ['compressao', 'web', 'otimizacao'], modulePath: './image-compressor.js' },
+  { id: 'bio-generator', code: 'BI', title: 'Gerador de Bio', category: 'Texto', description: 'Crie bios curtas para redes, portfolio e paginas profissionais.', tags: ['bio', 'social', 'texto'], modulePath: './bio-generator.js' },
+  { id: 'nickname-generator', code: 'NK', title: 'Gerador de Nickname', category: 'Texto', description: 'Sugestoes de nomes memoraveis para perfis, marcas e projetos.', tags: ['nome', 'marca', 'perfil'], modulePath: './nickname-generator.js' },
+  { id: 'password-generator', code: 'PW', title: 'Gerador de Senhas', category: 'Seguranca', description: 'Senhas fortes com aleatoriedade criptografica nativa.', tags: ['senha', 'crypto', 'seguranca'], modulePath: './password-generator.js' },
+  { id: 'qrcode-generator', code: 'QR', title: 'Gerador de QR Code', category: 'Codigo', description: 'Gere QR Codes para links, textos, Pix copia e cola e contatos.', tags: ['qr', 'url', 'download'], modulePath: './qrcode-generator.js' },
+  { id: 'char-counter', code: 'CC', title: 'Contador de Caracteres', category: 'Texto', description: 'Conte caracteres, palavras, linhas e tempo estimado de leitura.', tags: ['texto', 'seo', 'contador'], modulePath: './char-counter.js' },
+  { id: 'json-formatter', code: 'JS', title: 'Formatador JSON', category: 'Dev', description: 'Valide, formate e compacte JSON com mensagens claras de erro.', tags: ['json', 'dev', 'validacao'], modulePath: './json-formatter.js' },
+  { id: 'link-shortener', code: 'LK', title: 'Encurtador de Links', category: 'Web', description: 'Crie links curtos usando is.gd com validacao e limite de chamadas.', tags: ['url', 'links', 'rapido'], modulePath: './link-shortener.js' }
+];
