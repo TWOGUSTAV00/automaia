@@ -1,3 +1,7 @@
+const PBKDF2_ITERATIONS = 310_000
+const SALT_LENGTH = 32
+const IV_LENGTH = 12
+
 export const CryptoEngine = {
   async deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey> {
     const enc = new TextEncoder()
@@ -5,7 +9,7 @@ export const CryptoEngine = {
       'raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveKey']
     )
     return crypto.subtle.deriveKey(
-      { name: 'PBKDF2', salt, iterations: 310000, hash: 'SHA-256' },
+      { name: 'PBKDF2', salt: toArrayBuffer(salt), iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
       baseKey,
       { name: 'AES-GCM', length: 256 },
       false, ['encrypt', 'decrypt']
@@ -13,20 +17,27 @@ export const CryptoEngine = {
   },
 
   async encrypt(plaintext: string, password: string): Promise<string> {
-    const salt = crypto.getRandomValues(new Uint8Array(32))
-    const iv   = crypto.getRandomValues(new Uint8Array(12))
+    const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH))
+    const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH))
     const key  = await this.deriveKey(password, salt)
-    const enc  = new TextEncoder()
-    const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(plaintext))
+    const cipher = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv: toArrayBuffer(iv) },
+      key,
+      toArrayBuffer(new TextEncoder().encode(plaintext))
+    )
     return bytesToHex(salt) + bytesToHex(iv) + btoa(String.fromCharCode(...new Uint8Array(cipher)))
   },
 
   async decrypt(ciphertext: string, password: string): Promise<string> {
-    const salt = hexToBytes(ciphertext.slice(0, 64))
-    const iv   = hexToBytes(ciphertext.slice(64, 64 + 24))
-    const data = Uint8Array.from(atob(ciphertext.slice(64 + 24)), c => c.charCodeAt(0))
+    const salt = hexToBytes(ciphertext.slice(0, SALT_LENGTH * 2))
+    const iv = hexToBytes(ciphertext.slice(SALT_LENGTH * 2, SALT_LENGTH * 2 + IV_LENGTH * 2))
+    const data = Uint8Array.from(atob(ciphertext.slice(SALT_LENGTH * 2 + IV_LENGTH * 2)), c => c.charCodeAt(0))
     const key  = await this.deriveKey(password, salt)
-    const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data)
+    const plain = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: toArrayBuffer(iv) },
+      key,
+      toArrayBuffer(data)
+    )
     return new TextDecoder().decode(plain)
   },
 
@@ -40,4 +51,8 @@ function bytesToHex(buf: Uint8Array): string {
 }
 function hexToBytes(hex: string): Uint8Array {
   return new Uint8Array(hex.match(/.{2}/g)!.map(b => parseInt(b, 16)))
+}
+
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer
 }

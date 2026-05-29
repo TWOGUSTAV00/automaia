@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://automaia.pages.dev/sitemap.xml

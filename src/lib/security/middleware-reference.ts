@@ -1,3 +1,6 @@
+// Reference implementation for an SSR Next deployment.
+// The live GitHub Pages/Cloudflare Pages build is exported as static HTML, so
+// this file intentionally stays outside src/middleware.ts.
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'

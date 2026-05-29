@@ -54,7 +54,7 @@ export const TwoFactor = {
     return `otpauth://totp/${label}?secret=${secret}&issuer=NemoWeb&algorithm=SHA1&digits=6&period=30`
   },
 
-  // Verify a 6-digit TOTP code (±1 window for clock drift)
+  // Verify a 6-digit TOTP code (+/-1 window for clock drift)
   verifyToken(secret: string, token: string): boolean {
     const time = Math.floor(Date.now() / 30_000)
     for (const delta of [-1, 0, 1]) {

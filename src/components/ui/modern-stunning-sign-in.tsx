@@ -1,207 +1,241 @@
 "use client"
 
 import * as React from "react"
-import { useState } from "react"
-import { motion, AnimatePresence } from "motion/react"
-import { Eye, EyeOff, Waves } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import { AnimatePresence, motion, useReducedMotion } from "motion/react"
+import {
+  ArrowRight,
+  Eye,
+  EyeOff,
+  LockKeyhole,
+  Mail,
+  ShieldCheck,
+} from "lucide-react"
+import { withBasePath } from "@/lib/utils"
 
-export const SignIn1 = () => {
+export function SignIn1() {
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
   const [error, setError] = React.useState("")
-  const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = React.useState(false)
+  const [isLoading, setIsLoading] = React.useState(false)
+  const reduceMotion = useReducedMotion()
 
-  const validateEmail = (email: string) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  const validateEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
 
-  const handleSignIn = async () => {
-    if (!email || !password) { setError("Preencha email e senha."); return }
-    if (!validateEmail(email)) { setError("Email inválido."); return }
+  async function handleSignIn() {
+    if (!email || !password) {
+      setError("Preencha email e senha.")
+      return
+    }
+
+    if (!validateEmail(email)) {
+      setError("Email invalido.")
+      return
+    }
+
     setError("")
     setIsLoading(true)
 
+    const hasSupabase =
+      Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
+      Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+
     try {
-      // Integrate with Supabase Auth
+      if (!hasSupabase) {
+        await new Promise((resolve) => setTimeout(resolve, 450))
+        window.location.href = withBasePath("/feed")
+        return
+      }
+
       const { createClient } = await import("@/lib/supabase/client")
       const supabase = createClient()
       const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
 
       if (authError) {
-        setError(authError.message === 'Invalid login credentials'
-          ? "Email ou senha incorretos."
-          : authError.message
+        setError(
+          authError.message === "Invalid login credentials"
+            ? "Email ou senha incorretos."
+            : authError.message
         )
-      } else {
-        window.location.href = '/feed'
+        return
       }
-    } catch (err: any) {
-      setError("Erro ao tentar fazer login. Verifique sua conexão.")
+
+      window.location.href = withBasePath("/feed")
+    } catch {
+      setError("Nao foi possivel entrar agora. Confira as credenciais ou abra o feed demo.")
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#000000] relative overflow-hidden w-full rounded-xl">
+    <main className="relative flex min-h-dvh w-full items-center justify-center overflow-hidden bg-black px-4 py-8">
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:44px_44px]" aria-hidden="true" />
 
-      {/* Animated orbs background */}
-      <div aria-hidden="true" className="absolute inset-0 overflow-hidden">
-        <motion.div
-          className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-[#6C63FF]/10 blur-3xl"
-          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-1/4 right-1/4 w-48 h-48 rounded-full bg-[#3B82F6]/10 blur-3xl"
-          animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2] }}
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-        />
-      </div>
-
-      {/* Glass card */}
-      <motion.div
-        initial={{ opacity: 0, y: 32, scale: 0.96 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5, ease: [0, 0, 0.2, 1] }}
-        className="relative z-10 w-full max-w-sm rounded-3xl bg-gradient-to-b from-white/[0.07] to-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-2xl p-8 flex flex-col items-center"
-      >
-        {/* Logo */}
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.1, duration: 0.4 }}
-          className="flex items-center justify-center w-14 h-14 rounded-2xl bg-[#6C63FF]/20 border border-[#6C63FF]/30 mb-4 shadow-lg"
-        >
-          {/* Logo placeholder - replace with actual logo */}
-          <img src="/logo.png" alt="NemoWeb Logo" className="w-10 h-10 object-contain" onError={(e) => {
-            // Fallback se a imagem não existir
-            e.currentTarget.style.display = 'none';
-            e.currentTarget.parentElement!.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6C63FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-waves"><path d="M2 6c.6 0 1.2-.2 1.8-.6.6-.4 1.2-.4 1.8 0 .6.4 1.2.6 1.8.6.6 0 1.2-.2 1.8-.6.6-.4 1.2-.4 1.8 0 .6.4 1.2.6 1.8.6.6 0 1.2-.2 1.8-.6.6-.4 1.2-.4 1.8 0 .6.4 1.2.6 1.8.6"/><path d="M2 12c.6 0 1.2-.2 1.8-.6.6-.4 1.2-.4 1.8 0 .6.4 1.2.6 1.8.6.6 0 1.2-.2 1.8-.6.6-.4 1.2-.4 1.8 0 .6.4 1.2.6 1.8.6.6 0 1.2-.2 1.8-.6.6-.4 1.2-.4 1.8 0 .6.4 1.2.6 1.8.6"/><path d="M2 18c.6 0 1.2-.2 1.8-.6.6-.4 1.2-.4 1.8 0 .6.4 1.2.6 1.8.6.6 0 1.2-.2 1.8-.6.6-.4 1.2-.4 1.8 0 .6.4 1.2.6 1.8.6.6 0 1.2-.2 1.8-.6.6-.4 1.2-.4 1.8 0 .6.4 1.2.6 1.8.6"/></svg>';
-          }} />
-        </motion.div>
-
-        {/* Title */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.4 }}
-          className="text-center mb-6"
-        >
-          <h2 className="text-2xl font-semibold text-white">NemoWeb</h2>
-          <p className="text-sm text-slate-400 mt-1">Sua rede de notícias</p>
-        </motion.div>
-
-        {/* Form */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.4 }}
-          className="flex flex-col w-full gap-3"
-        >
-          <input
-            aria-label="Email"
-            placeholder="Email"
-            type="email"
-            value={email}
-            autoComplete="email"
-            className="w-full px-5 py-3 rounded-xl bg-white/[0.07] border border-white/[0.08] text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-[#6C63FF]/60 transition"
-            onChange={(e) => setEmail(e.target.value)}
-          />
-
-          <div className="relative">
-            <input
-              aria-label="Senha"
-              placeholder="Senha"
-              type={showPassword ? "text" : "password"}
-              value={password}
-              autoComplete="current-password"
-              className="w-full px-5 py-3 pr-12 rounded-xl bg-white/[0.07] border border-white/[0.08] text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-[#6C63FF]/60 transition"
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSignIn()}
+      <section className="relative z-10 grid w-full max-w-5xl overflow-hidden rounded-[32px] border border-white/[0.08] bg-[#050507] shadow-2xl shadow-black/50 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="hidden border-r border-white/[0.08] bg-white/[0.03] p-8 lg:block">
+          <Link href="/" className="inline-flex min-h-11 items-center gap-3 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#6C63FF]">
+            <Image
+              src={withBasePath("/logo.png")}
+              alt="Logo NemoWeb"
+              width={50}
+              height={50}
+              className="h-12 w-12 rounded-2xl object-cover ring-1 ring-white/15"
+              priority
             />
-            <button
-              type="button"
-              aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition cursor-pointer p-1"
-            >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
+            <span className="text-lg font-semibold text-white">NemoWeb</span>
+          </Link>
+
+          <div className="mt-16">
+            <p className="inline-flex min-h-9 items-center gap-2 rounded-full border border-[#6C63FF]/25 bg-[#6C63FF]/10 px-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#B9B5FF]">
+              <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+              auth segura
+            </p>
+            <h1 className="mt-5 text-balance text-4xl font-semibold leading-tight text-white">
+              Entre para acompanhar o feed de noticias em tempo real.
+            </h1>
+            <p className="mt-5 leading-7 text-slate-400">
+              A tela ja esta preparada para Supabase Auth. Sem variaveis de producao, ela abre o feed demo para o site continuar navegavel.
+            </p>
           </div>
 
-          <div className="flex justify-end">
-            <a href="/forgot-password" className="text-xs text-[#6C63FF] hover:text-[#8B84FF] transition">
-              Esqueceu a senha?
-            </a>
+          <div className="mt-10 grid gap-3">
+            {[
+              "Sessao JWT via Supabase",
+              "RLS preparado no banco",
+              "2FA e Web Crypto no modulo de seguranca",
+            ].map((item) => (
+              <div key={item} className="flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-black/35 p-3 text-sm text-slate-300">
+                <ShieldCheck className="h-4 w-4 text-[#10B981]" aria-hidden="true" />
+                {item}
+              </div>
+            ))}
           </div>
-
-          <AnimatePresence>
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2 mt-2"
-              >
-                {error}
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <hr className="border-white/[0.06] my-1" />
-
-          <button
-            onClick={handleSignIn}
-            disabled={isLoading}
-            className="w-full bg-[#6C63FF] hover:bg-[#5B52EE] active:scale-[0.98] text-white font-medium px-5 py-3 rounded-full shadow-lg shadow-[#6C63FF]/20 transition-all duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center"
-          >
-            {isLoading ? (
-              <span className="flex items-center justify-center gap-2">
-                <motion.div
-                  className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
-                />
-                Entrando...
-              </span>
-            ) : "Entrar"}
-          </button>
-
-          <button
-            type="button"
-            className="w-full flex items-center justify-center gap-2 bg-white/[0.05] border border-white/[0.08] hover:bg-white/[0.09] rounded-full px-5 py-3 text-white text-sm font-medium transition-all duration-200 cursor-pointer"
-          >
-            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="" className="w-4 h-4" />
-            Continuar com Google
-          </button>
-
-          <p className="text-center text-xs text-slate-500 mt-1">
-            Não tem conta?{" "}
-            <a href="/register" className="text-[#6C63FF] hover:text-[#8B84FF] transition">
-              Cadastre-se grátis
-            </a>
-          </p>
-        </motion.div>
-      </motion.div>
-
-      {/* Social proof */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6, duration: 0.4 }}
-        className="relative z-10 mt-8 flex flex-col items-center text-center"
-      >
-        <div className="flex -space-x-2">
-          {['men/32','women/44','men/54','women/68'].map((id) => (
-            <img key={id} src={`https://randomuser.me/api/portraits/${id}.jpg`}
-              alt="user" className="w-7 h-7 rounded-full border-2 border-[#000000] object-cover" />
-          ))}
         </div>
-        <p className="text-slate-500 text-xs mt-2">
-          Junte-se a <span className="text-white font-medium">milhares</span> de usuários no NemoWeb
-        </p>
-      </motion.div>
-    </div>
+
+        <motion.div
+          initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+          animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+          transition={{ duration: 0.32, ease: [0, 0, 0.2, 1] }}
+          className="p-5 sm:p-8 lg:p-10"
+        >
+          <div className="mx-auto flex w-full max-w-md flex-col">
+            <div className="mb-8 flex items-center gap-3 lg:hidden">
+              <Image
+                src={withBasePath("/logo.png")}
+                alt="Logo NemoWeb"
+                width={48}
+                height={48}
+                className="h-12 w-12 rounded-2xl object-cover ring-1 ring-white/15"
+                priority
+              />
+              <div>
+                <p className="text-lg font-semibold text-white">NemoWeb</p>
+                <p className="text-sm text-slate-500">Sua rede de noticias</p>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#6C63FF]/15 text-[#B9B5FF] ring-1 ring-[#6C63FF]/25">
+                <LockKeyhole className="h-5 w-5" aria-hidden="true" />
+              </div>
+              <h2 className="mt-5 text-3xl font-semibold text-white">Entrar</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                Use sua conta NemoWeb ou acesse o feed demo enquanto o Supabase de producao e conectado.
+              </p>
+            </div>
+
+            <div className="mt-7 grid gap-4">
+              <label className="grid gap-2 text-sm font-medium text-slate-200">
+                Email
+                <div className="relative">
+                  <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" aria-hidden="true" />
+                  <input
+                    aria-label="Email"
+                    type="email"
+                    value={email}
+                    autoComplete="email"
+                    className="min-h-12 w-full rounded-2xl border border-white/[0.1] bg-white/[0.05] py-3 pl-11 pr-4 text-base text-white outline-none transition placeholder:text-slate-600 focus:border-[#6C63FF]/70 focus:ring-4 focus:ring-[#6C63FF]/15"
+                    placeholder="voce@email.com"
+                    onChange={(event) => setEmail(event.target.value)}
+                  />
+                </div>
+              </label>
+
+              <label className="grid gap-2 text-sm font-medium text-slate-200">
+                Senha
+                <div className="relative">
+                  <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" aria-hidden="true" />
+                  <input
+                    aria-label="Senha"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    autoComplete="current-password"
+                    className="min-h-12 w-full rounded-2xl border border-white/[0.1] bg-white/[0.05] py-3 pl-11 pr-14 text-base text-white outline-none transition placeholder:text-slate-600 focus:border-[#6C63FF]/70 focus:ring-4 focus:ring-[#6C63FF]/15"
+                    placeholder="Sua senha"
+                    onChange={(event) => setPassword(event.target.value)}
+                    onKeyDown={(event) => event.key === "Enter" && handleSignIn()}
+                  />
+                  <button
+                    type="button"
+                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                    onClick={() => setShowPassword((value) => !value)}
+                    className="absolute right-2 top-1/2 flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white/[0.07] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#6C63FF]"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </label>
+
+              <div className="flex justify-end">
+                <Link href="/forgot-password" className="min-h-11 rounded-full px-3 py-2 text-sm font-medium text-[#A7A2FF] transition hover:bg-white/[0.06] hover:text-white">
+                  Esqueceu a senha?
+                </Link>
+              </div>
+
+              <AnimatePresence>
+                {error ? (
+                  <motion.div
+                    role="alert"
+                    initial={reduceMotion ? false : { opacity: 0, y: -8 }}
+                    animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+                    exit={reduceMotion ? undefined : { opacity: 0, y: -8 }}
+                    className="rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm leading-6 text-red-200"
+                  >
+                    {error}
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+
+              <button
+                type="button"
+                onClick={handleSignIn}
+                disabled={isLoading}
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#6C63FF] px-5 text-sm font-semibold text-white shadow-lg shadow-[#6C63FF]/20 transition hover:bg-[#5B52EE] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#8B84FF]"
+              >
+                {isLoading ? "Verificando..." : "Entrar"}
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </button>
+
+              <Link
+                href="/feed"
+                className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.04] px-5 text-sm font-semibold text-white transition hover:bg-white/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#8B84FF]"
+              >
+                Abrir feed demo
+              </Link>
+
+              <p className="text-center text-sm text-slate-500">
+                Nao tem conta?{" "}
+                <Link href="/register" className="font-semibold text-[#A7A2FF] hover:text-white">
+                  Cadastre-se gratis
+                </Link>
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+    </main>
   )
 }
